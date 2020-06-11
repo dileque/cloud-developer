@@ -1,13 +1,39 @@
-import 'source-map-support/register'
+import 'source-map-support/register';
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import * as middy from "middy";
+import { cors } from "middy/middlewares";
+import { updateTodo } from '../../businessLogic/TodoBusiness';
+import { UpdateTodoRequest } from "../../requests/UpdateTodoRequest";
+import { createLogger } from '../../utils/logger';
 
-import { APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda'
+const logger = createLogger('updateTodo');
 
-import { UpdateTodoRequest } from '../../requests/UpdateTodoRequest'
+export const handler = middy(async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  try {
+    logger.info("Processing event", event);
+    const todoId = event.pathParameters.todoId;
+    const updatedTodo: UpdateTodoRequest = JSON.parse(event.body);
 
-export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  const todoId = event.pathParameters.todoId
-  const updatedTodo: UpdateTodoRequest = JSON.parse(event.body)
+    await updateTodo(todoId, updatedTodo);
 
-  // TODO: Update a TODO item with the provided id using values in the "updatedTodo" object
-  return undefined
-}
+    return {
+      statusCode: 200,
+      body: ""
+    };
+  } catch (error) {
+    logger.error("updateTodo", error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({
+        error
+      })
+    };
+  }
+});
+
+handler.use(
+  cors({
+    origin: "*",
+    credentials: true
+  })
+);

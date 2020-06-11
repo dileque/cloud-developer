@@ -1,10 +1,66 @@
-import 'source-map-support/register'
+import 'source-map-support/register';
+import * as AWS from 'aws-sdk';
+import * as AWSXRay from 'aws-xray-sdk';
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import * as middy from "middy";
+import * as uuid from '../../../node_modules/uuid'
+import { cors } from "middy/middlewares";
+import { updateAttachmentUrl } from '../../businessLogic/TodoBusiness';
+import { createLogger } from '../../utils/logger';
 
-import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } from 'aws-lambda'
+const logger = createLogger('generateUploadUrl');
 
-export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  const todoId = event.pathParameters.todoId
+const XAWS = AWSXRay.captureAWS(AWS);
+let options: AWS.S3.Types.ClientConfiguration = {
+    signatureVersion: 'v4',
+};
+const s3 = new XAWS.S3(options);
 
-  // TODO: Return a presigned URL to upload a file for a TODO item with the provided id
-  return undefined
+const bucketName = process.env.TODO_S3_BUCKET;
+const urlExpiration = parseInt(process.env.SIGNED_URL_EXPIRATION);
+
+function getUploadUrl(imageId: string): string {
+    return s3.getSignedUrl('putObject', {
+        Bucket: bucketName,
+        Key: imageId,
+        Expires: urlExpiration,
+    });
 }
+
+export const handler = middy(async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  try {
+    logger.info("Processing event", event);
+    const imageId = uuid.v4();
+    const todoId = event.pathParameters.todoId
+    logger.info(`Updating Todo ${todoId} url`);
+    
+    updateAttachmentUrl(
+        todoId,
+        `https://${bucketName}.s3.amazonaws.com/${imageId}`
+    );
+
+    const uploadUrl = getUploadUrl(imageId)
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        uploadUrl
+      })
+    };
+  } catch (error) {
+    logger.error("Error occured generateUploadUrl", error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({
+        error
+      })
+    };
+  }
+});
+
+handler.use(
+  cors({
+    origin: "*",
+    credentials: true
+  })
+);
