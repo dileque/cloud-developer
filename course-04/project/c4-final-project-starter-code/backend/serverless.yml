@@ -70,6 +70,12 @@ functions:
           path: todos
           authorizer: Auth
           cors: true
+          reqValidatorName: RequestBodyValidator
+          documentation:
+            summary: Create a new todo item
+            description: Create a new todo item
+            requestModels:
+              'application/json': CreateTodoRequest
  
     iamRoleStatements:
       - Effect: Allow
@@ -91,6 +97,12 @@ functions:
           path: todos/{todoId}
           authorizer: Auth
           cors: true
+          reqValidatorName: RequestBodyValidator
+          documentation:
+            summary: Update a todo item
+            description: Update a todo item
+            requestModels:
+              'application/json': UpdateTodoRequest
    
     iamRoleStatements:
       - Effect: Allow
@@ -231,4 +243,4 @@ resources:
               Resource: 'arn:aws:s3:::${self:provider.environment.TODO_S3_BUCKET}/*'
         Bucket: !Ref TodoBucket
 
-    
+  
