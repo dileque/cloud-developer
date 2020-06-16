@@ -1,5 +1,5 @@
 {
-  "name": "dileque-sls-todo-app",
+  "name": "dilek-sls-todo-app",
   "version": "1.0.0",
   "description": "Serverless TODO image app",
   "dependencies": {

@@ -1,15 +1,12 @@
 import 'source-map-support/register';
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import { APIGatewayProxyHandler, APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
 import { CreateTodoRequest } from "../../requests/CreateTodoRequest";
 import { createTodo } from '../../businessLogic/TodoBusiness';
-import * as middy from "middy";
-
-import { cors } from "middy/middlewares";
 import { createLogger } from '../../utils/logger';
 
 const logger = createLogger('createTodo');
 
-export const handler = middy(async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   try {
     logger.info('Processing event:', event);
 
@@ -18,6 +15,9 @@ export const handler = middy(async (event: APIGatewayProxyEvent): Promise<APIGat
 
     return {
       statusCode: 201,
+      headers: {
+        'Access-Control-Allow-Origin': '*'
+      },
       body: JSON.stringify({
         item: newItem
       })
@@ -26,16 +26,12 @@ export const handler = middy(async (event: APIGatewayProxyEvent): Promise<APIGat
     logger.error("Error occured in createTodo", error);
     return {
       statusCode: 500,
+      headers: {
+        'Access-Control-Allow-Origin': '*'
+      },
       body: JSON.stringify({
         error
       })
     };
   }
-});
-
-handler.use(
-  cors({
-    origin: "*",
-    credentials: true
-  })
-);
+}

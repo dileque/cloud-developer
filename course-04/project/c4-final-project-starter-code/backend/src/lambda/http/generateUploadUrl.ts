@@ -1,10 +1,8 @@
 import 'source-map-support/register';
 import * as AWS from 'aws-sdk';
 import * as AWSXRay from 'aws-xray-sdk';
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import * as middy from "middy";
+import { APIGatewayProxyHandler, APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
 import * as uuid from '../../../node_modules/uuid'
-import { cors } from "middy/middlewares";
 import { updateAttachmentUrl } from '../../businessLogic/TodoBusiness';
 import { createLogger } from '../../utils/logger';
 
@@ -27,7 +25,7 @@ function getUploadUrl(imageId: string): string {
     });
 }
 
-export const handler = middy(async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   try {
     logger.info("Processing event", event);
     const imageId = uuid.v4();
@@ -43,6 +41,9 @@ export const handler = middy(async (event: APIGatewayProxyEvent): Promise<APIGat
 
     return {
       statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*'
+      },
       body: JSON.stringify({
         uploadUrl
       })
@@ -51,16 +52,12 @@ export const handler = middy(async (event: APIGatewayProxyEvent): Promise<APIGat
     logger.error("Error occured generateUploadUrl", error);
     return {
       statusCode: 500,
+      headers: {
+        'Access-Control-Allow-Origin': '*'
+      },
       body: JSON.stringify({
         error
       })
     };
   }
-});
-
-handler.use(
-  cors({
-    origin: "*",
-    credentials: true
-  })
-);
+}

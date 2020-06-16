@@ -36,8 +36,8 @@ export const updateAttachmentUrl = async (todoId: string, attachmentUrl: string)
     return await todoAccess.setAttachmentUrl(todoId, attachmentUrl);
 };
 
-export const updateTodo = async (todoId: string, request: UpdateTodoRequest): Promise<void> => {
-    return await todoAccess.updateTodoById(todoId, request);
+export const updateTodo = async (userId: string, todoId: string, request: UpdateTodoRequest): Promise<void> => {
+    return await todoAccess.updateTodoById(userId, todoId, request);
 };
 
 export const deleteTodo = async (todoId: string ): Promise<void> => {

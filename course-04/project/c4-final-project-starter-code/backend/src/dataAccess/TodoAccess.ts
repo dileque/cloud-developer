@@ -10,8 +10,7 @@ const XAWS = AWSXRay.captureAWS(AWS);
 export class TodoAccess {
   constructor(
       private readonly docClient: DocumentClient = new XAWS.DynamoDB.DocumentClient(),
-      private readonly todosTable = process.env.TODO_TABLE,
-      private readonly indexName = process.env.INDEX_NAME
+      private readonly todosTable = process.env.TODO_TABLE
   ) {}
 
   async createTodo(todoItem: TodoItem): Promise<TodoItem> {
@@ -24,8 +23,8 @@ export class TodoAccess {
 
   async getAllTodosByUser(userId: string): Promise<TodoItem[]> {
       const result = await this.docClient.query({
-          TableName: this.todosTable,
-          IndexName: this.indexName,
+          TableName: process.env.TODO_TABLE,
+          IndexName: process.env.INDEX_NAME,
           KeyConditionExpression: 'userId = :userId',
           ExpressionAttributeValues: {
               ':userId': userId
@@ -59,19 +58,25 @@ async deleteTodoById(todoId: string): Promise<void> {
         .promise();
 }
 
-async updateTodoById(todoId:string, updatedTodo:UpdateTodoRequest){
+async updateTodoById( userId: string, todoId:string, updatedTodo:UpdateTodoRequest){
     await this.docClient.update({
         TableName: this.todosTable,
-        Key:{
-            'todoId':todoId
-        },
-        UpdateExpression: 'set name = :n, dueDate = :d, done = :done',
+        Key: {
+            userId,
+            todoId
+          },
+        UpdateExpression:
+          'set #name = :name, #dueDate = :duedate, #done = :done',
         ExpressionAttributeValues: {
-            ':n' : updatedTodo.name,
-            ':d' : updatedTodo.dueDate,
-            ':done' : updatedTodo.done
+          ':name': updatedTodo.name,
+          ':duedate': updatedTodo.dueDate,
+          ':done': updatedTodo.done
         },
-        
+        ExpressionAttributeNames: {
+          '#name': 'name',
+          '#dueDate': 'dueDate',
+          '#done': 'done'
+        }
       }).promise()
 }
 

@@ -1,5 +1,5 @@
 service:
-  name: dileque-sls-todo-app
+  name: dilek-sls-todo-app
 
 plugins:
   - serverless-webpack
@@ -26,9 +26,9 @@ provider:
     apiGateway: true
 
   environment:
-    APP_NAME: dileque-sls-todo-app
+    APP_NAME: dilek-sls-todo-app
     TODO_TABLE: Todos-${self:provider.stage}
-    TODO_INDEX_NAME: TodoIdIndex
+    TODO_INDEX_NAME: UserIdIndex
     TODO_S3_BUCKET: ${self:provider.environment.APP_NAME}-s3-bucket-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300
 
@@ -45,10 +45,10 @@ functions:
           path: todos
           authorizer: Auth
           cors: true
+
     iamRoleStatements:
       - Effect: Allow
         Action:
-          - dynamodb:Scan
           - dynamodb:Query
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_TABLE}
       - Effect: Allow
@@ -70,11 +70,11 @@ functions:
           path: todos
           authorizer: Auth
           cors: true
+ 
     iamRoleStatements:
       - Effect: Allow
         Action:
           - dynamodb:PutItem
-          - dynamodb:Query
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_TABLE}
       - Effect: "Allow"
         Action:
@@ -91,11 +91,11 @@ functions:
           path: todos/{todoId}
           authorizer: Auth
           cors: true
+   
     iamRoleStatements:
       - Effect: Allow
         Action:
           - dynamodb:UpdateItem
-          - dynamodb:Query
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_TABLE}
       - Effect: "Allow"
         Action:
@@ -111,11 +111,11 @@ functions:
           path: todos/{todoId}
           authorizer: Auth
           cors: true
+   
     iamRoleStatements:
       - Effect: Allow
         Action:
           - dynamodb:DeleteItem
-          - dynamodb:Query
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_TABLE}
       - Effect: "Allow"
         Action:
@@ -131,6 +131,7 @@ functions:
           path: todos/{todoId}/attachment
           authorizer: Auth
           cors: true
+   
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -176,23 +177,27 @@ resources:
         AttributeDefinitions:
           - AttributeName: todoId
             AttributeType: S
+          - AttributeName: createdAt
+            AttributeType: S
           - AttributeName: userId
             AttributeType: S
         KeySchema:
-          - AttributeName: todoId
+          - AttributeName: userId
             KeyType: HASH
+          - AttributeName: todoId
+            KeyType: RANGE
         GlobalSecondaryIndexes:
           - IndexName: ${self:provider.environment.TODO_INDEX_NAME}
             KeySchema:
             - AttributeName: userId
               KeyType: HASH
+            - AttributeName: createdAt
+              KeyType: RANGE
             Projection:
               ProjectionType: ALL
         BillingMode: PAY_PER_REQUEST
         TableName: ${self:provider.environment.TODO_TABLE}
-        StreamSpecification:
-          StreamViewType: NEW_IMAGE
-
+       
     TodoBucket:
       Type: AWS::S3::Bucket
       Properties:
