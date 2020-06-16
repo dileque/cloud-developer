@@ -2,8 +2,6 @@ import 'source-map-support/register';
 import * as AWS from 'aws-sdk';
 import * as AWSXRay from 'aws-xray-sdk';
 import { APIGatewayProxyHandler, APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
-import * as uuid from '../../../node_modules/uuid'
-import { updateAttachmentUrl } from '../../businessLogic/TodoBusiness';
 import { createLogger } from '../../utils/logger';
 
 const logger = createLogger('generateUploadUrl');
@@ -28,16 +26,9 @@ function getUploadUrl(imageId: string): string {
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   try {
     logger.info("Processing event", event);
-    const imageId = uuid.v4();
     const todoId = event.pathParameters.todoId
-    logger.info(`Updating Todo ${todoId} url`);
-    
-    updateAttachmentUrl(
-        todoId,
-        `https://${bucketName}.s3.amazonaws.com/${imageId}`
-    );
-
-    const uploadUrl = getUploadUrl(imageId)
+    logger.info('Geting signed URL for todo...')
+    const uploadUrl = getUploadUrl(todoId)
 
     return {
       statusCode: 200,

@@ -18,22 +18,23 @@ export const getAllTodosByUser = async (event: APIGatewayProxyEvent): Promise<To
 };
 
 export const createTodo = async (request: CreateTodoRequest, event: APIGatewayProxyEvent): Promise<TodoItem> => {
-    const todoId = uuid.v4();
+    
     const userId = getUserId(event);
+    const itemId = uuid.v4()
+    const bucketName = process.env.TODO_S3_BUCKET
 
-    return await todoAccess.createTodo({
-        createdAt: new Date().toISOString(),
-        done: false,
-        dueDate: request.dueDate,
-        name: request.name,
-        todoId,
-        userId,
-        attachmentUrl: ""
-    });
+  return await todoAccess.createTodo({
+    todoId: itemId,
+    createdAt: new Date().toISOString(),
+    ...request,
+    done: false,
+    attachmentUrl: `https://${bucketName}.s3.amazonaws.com/${itemId}`,
+    userId
+  });
 };
 
-export const updateAttachmentUrl = async (todoId: string, attachmentUrl: string): Promise<void> => {
-    return await todoAccess.setAttachmentUrl(todoId, attachmentUrl);
+export const updateAttachmentUrl = async (userId: string, todoId: string, attachmentUrl: string): Promise<void> => {
+    return await todoAccess.setAttachmentUrl(userId, todoId, attachmentUrl);
 };
 
 export const updateTodo = async (userId: string, todoId: string, request: UpdateTodoRequest): Promise<void> => {

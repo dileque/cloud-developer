@@ -80,7 +80,7 @@ async updateTodoById( userId: string, todoId:string, updatedTodo:UpdateTodoReque
       }).promise()
 }
 
-public async setAttachmentUrl(
+public async setAttachmentUrl(userId: string,
     todoId: string,
     attachmentUrl: string,
 ): Promise<void> {
@@ -88,8 +88,9 @@ public async setAttachmentUrl(
         .update({
             TableName: this.todosTable,
             Key: {
+                userId,
                 todoId
-            },
+              },
             UpdateExpression: 'set attachmentUrl = :attachmentUrl',
             ExpressionAttributeValues: {
                 ':attachmentUrl': attachmentUrl,
