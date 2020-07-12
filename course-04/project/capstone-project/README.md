@@ -1,11 +1,12 @@
-Serverless BLOG App
-Serverless blog application where a user can pen down their thoughts, feelings, memories and inspired images.
+Serverless Blog App
+Serverless blog application where a user can post blog items and also attach a file to her/his post.
 
 Functionality
 The application allows users to create, update, delete blog items.
 The application allows users to upload a file.
-The application only displays items for a logged in user.
-A user needs to authenticate in order to use an application
+The application only displays items/blog posts for a logged in user.
+A user needs to authenticate in order to use the application
+
 
 Codebase
 The code is split into multiple layers separating business logic from I/O related code.
@@ -26,7 +27,6 @@ KeySchema:
         KeyType: RANGE
 items are fetched using the query() method and not scan() method (which is less efficient on large datasets)
 
-
 How to run the application
 Backend
 To deploy an application run the following commands:
@@ -34,11 +34,3 @@ To deploy an application run the following commands:
 cd backend
 npm install
 sls deploy -v
-
-Client
-
-To run a client application first edit the client/src/config.ts file to set correct parameters. And then run the following commands:
-
-cd client
-npm install
-npm run start
