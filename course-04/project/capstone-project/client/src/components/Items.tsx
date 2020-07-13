@@ -72,6 +72,7 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
   }
 
   onEditButtonClick = (itemId: string) => {
+    
     this.props.history.push(`/items/${itemId}/edit`)
   }
 
@@ -87,7 +88,7 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
       if(newItem)
       {
         this.setUploadState(UploadState.FetchingPresignedUrl)
-        const uploadUrl = await getUploadUrl(this.props.auth.getIdToken(), newItem.itemId)
+        const uploadUrl = await getUploadUrl(this.props.auth.getIdToken(), newItem.id)
 
         this.setUploadState(UploadState.UploadingFile)
         await uploadFile(uploadUrl, this.state.newItemImage)
@@ -114,7 +115,7 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
     try {
       await deleteItem(this.props.auth.getIdToken(), itemId)
       this.setState({
-        items: this.state.items.filter(item => item.itemId != itemId)
+        items: this.state.items.filter(item => item.id != itemId)
       })
     } catch {
       alert('Item deletion failed')
@@ -214,7 +215,7 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
         <Grid>
           {this.state.items.map((item, pos) => {
             return (
-              <Grid.Row centered={true} key={item.itemId}>
+              <Grid.Row centered={true} key={item.id}>
                 <Grid.Column width={8}>
                   <Segment>
                     <Image src={item.ImageUrl} />
@@ -234,12 +235,12 @@ export class Items extends React.PureComponent<ItemsProps, ItemsState> {
                 </Grid.Column>
                 <Grid.Column width={2}>
                   <Segment>
-                    <Button icon color="blue" onClick={() => this.onEditButtonClick(item.itemId)} >
+                    <Button icon color="blue" onClick={() => this.onEditButtonClick(item.id)} >
                       <Icon name="pencil" />
                     </Button>
                   </Segment>
                   <Segment>
-                    <Button icon color="red" onClick={() => this.onItemDelete(item.itemId)}>
+                    <Button icon color="red" onClick={() => this.onItemDelete(item.id)}>
                       <Icon name="delete" />  
                     </Button>
                   </Segment>

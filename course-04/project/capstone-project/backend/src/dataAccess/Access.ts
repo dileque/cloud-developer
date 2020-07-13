@@ -15,7 +15,7 @@ export class Access {
   constructor(
       private readonly docClient: DocumentClient = new XAWS.DynamoDB.DocumentClient(),
       private readonly blogTable = process.env.BLOG_TABLE,
-      private readonly ItemsImageBucket = process.env.JOURNAL_ITEMS_IMAGES_S3_BUCKET) {}
+      private readonly ImagesBucket = process.env.IMAGES_S3_BUCKET) {}
 
   async createItem(item: Item): Promise<Item> {
       await this.docClient.put({
@@ -93,9 +93,9 @@ public async setAttachmentUrl(userId: string,
                 userId,
                 id
               },
-            UpdateExpression: 'set attachmentUrl = :attachmentUrl',
+            UpdateExpression: 'set ImageUrl = :attachmentUrl',
             ExpressionAttributeValues: {
-                ':attachmentUrl': attachmentUrl,
+                ':ImageUrl': attachmentUrl,
             },
             ReturnValues: 'UPDATED_NEW',
         })
@@ -104,7 +104,7 @@ public async setAttachmentUrl(userId: string,
 
 async getUploadUrl(itemId:string){
     return await s3.getSignedUrl('putObject', {
-      Bucket: this.ItemsImageBucket,
+      Bucket: this.ImagesBucket,
       Key: itemId,
       Expires: 300
     })

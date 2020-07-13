@@ -1,6 +1,6 @@
 export interface Item {
   userId: string
-  itemId: string
+  id: string
   createdAt: string
   modifiedAt: string
   title: string
